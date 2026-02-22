@@ -1,5 +1,6 @@
 import 'dart:async'; // For Timer
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart'; // For tick sound
 import '../models/breathing_mode.dart';
 import '../models/breathing_phase.dart';
 import '../theme/app_colors.dart';
@@ -27,6 +28,12 @@ class _BreathingScreenState extends State<BreathingScreen>
   BreathingPhase _currentPhase = BreathingPhase.inhale;
   int _secondsRemaining = 4;
   Timer? _timer;
+
+  // ---- AUDIO PLAYERS ----
+  // We use two separate players and keep them hot in memory (ReleaseMode.stop)
+  // so there is absolutely ZERO delay when we want to play the sounds.
+  final AudioPlayer _inhalePlayer = AudioPlayer()..setReleaseMode(ReleaseMode.stop);
+  final AudioPlayer _exhalePlayer = AudioPlayer()..setReleaseMode(ReleaseMode.stop);
 
   // ---- GET READY COUNTDOWN ----
   // Like adding: const [isGettingReady, setIsGettingReady] = useState(true) in React.
@@ -59,6 +66,16 @@ class _BreathingScreenState extends State<BreathingScreen>
   void initState() {
     super.initState();
 
+    // ---- PRELOAD AUDIO BUFFERS ----
+    // By setting the sources now, the audio is loaded into memory instantly.
+    if (widget.mode.name == 'Box Breathing') {
+      _inhalePlayer.setSource(AssetSource('sounds/inhale_4seconds.mp3'));
+      _exhalePlayer.setSource(AssetSource('sounds/exhale_4seconds.mp3'));
+    } else if (widget.mode.name == '4-7-8 Breathing') {
+      _inhalePlayer.setSource(AssetSource('sounds/inhale_4seconds.mp3'));
+      _exhalePlayer.setSource(AssetSource('sounds/exhale_8seconds.mp3'));
+    }
+
     // Create the AnimationController.
     // "vsync: this" connects it to the ticker from SingleTickerProviderStateMixin.
     // We set an initial duration — it will be updated for each phase.
@@ -82,6 +99,8 @@ class _BreathingScreenState extends State<BreathingScreen>
   void dispose() {
     _timer?.cancel();
     _animationController.dispose();
+    _inhalePlayer.dispose();
+    _exhalePlayer.dispose();
     super.dispose();
   }
 
@@ -104,8 +123,26 @@ class _BreathingScreenState extends State<BreathingScreen>
     });
   }
 
+  // ---- AUDIO LOGIC ----
+  void _onPhaseStart() {
+    if (widget.mode.name == 'Box Breathing' || widget.mode.name == '4-7-8 Breathing') {
+      if (_currentPhase == BreathingPhase.inhale) {
+        // seek(0) rewinds the sound if it played before.
+        // resume() instantly plays the preloaded buffer in memory.
+        _inhalePlayer.seek(Duration.zero);
+        _inhalePlayer.resume();
+      } else if (_currentPhase == BreathingPhase.exhale) {
+        _exhalePlayer.seek(Duration.zero);
+        _exhalePlayer.resume();
+      }
+    }
+  }
+
   // ---- NEW: Start the appropriate animation for the current phase ----
   void _startPhaseAnimation() {
+    // Trigger sound at the start of the phase
+    _onPhaseStart();
+
     switch (_currentPhase) {
       case BreathingPhase.inhale:
         // Expand: animate from current value → 1.0 (min → max size)
