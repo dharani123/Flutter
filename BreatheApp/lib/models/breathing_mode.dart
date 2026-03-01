@@ -45,3 +45,13 @@ const relaxing478 = BreathingMode(
   exhaleDuration: 8,
   holdAfterExhale: 0, // No hold after exhale in this mode!
 );
+
+// Resonant Breathing:
+// Inhale 4s -> Exhale 4s -> Repeat (no holds)
+const resonantBreathing = BreathingMode(
+  name: 'Resonant Breathing',
+  inhaleDuration: 4,
+  holdAfterInhale: 0,
+  exhaleDuration: 4,
+  holdAfterExhale: 0,
+);

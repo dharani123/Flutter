@@ -51,6 +51,15 @@ class HomeScreen extends StatelessWidget {
               subtitle: '4 – 7 – 8',
               mode: relaxing478,
             ),
+            const SizedBox(height: 16),
+
+            // Resonant Breathing button
+            _buildModeButton(
+              context,
+              label: 'Resonant Breathing',
+              subtitle: '4 - 4',
+              mode: resonantBreathing,
+            ),
           ],
         ),
       ),

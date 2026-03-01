@@ -68,7 +68,7 @@ class _BreathingScreenState extends State<BreathingScreen>
 
     // ---- PRELOAD AUDIO BUFFERS ----
     // By setting the sources now, the audio is loaded into memory instantly.
-    if (widget.mode.name == 'Box Breathing') {
+    if (widget.mode.name == 'Box Breathing' || widget.mode.name == 'Resonant Breathing') {
       _inhalePlayer.setSource(AssetSource('sounds/inhale_4seconds.mp3'));
       _exhalePlayer.setSource(AssetSource('sounds/exhale_4seconds.mp3'));
     } else if (widget.mode.name == '4-7-8 Breathing') {
@@ -125,7 +125,9 @@ class _BreathingScreenState extends State<BreathingScreen>
 
   // ---- AUDIO LOGIC ----
   void _onPhaseStart() {
-    if (widget.mode.name == 'Box Breathing' || widget.mode.name == '4-7-8 Breathing') {
+    if (widget.mode.name == 'Box Breathing' ||
+        widget.mode.name == '4-7-8 Breathing' ||
+        widget.mode.name == 'Resonant Breathing') {
       if (_currentPhase == BreathingPhase.inhale) {
         // seek(0) rewinds the sound if it played before.
         // resume() instantly plays the preloaded buffer in memory.
